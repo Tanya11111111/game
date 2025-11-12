@@ -24,6 +24,7 @@
             --ui-toggle-bg: #e4e4e8;
             --ui-text-primary: #1d1d1f;
             --ui-text-secondary: #555;
+            --ui-link-color: #007aff; /* Синий цвет Apple */
         }
 
         body {
@@ -34,10 +35,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            /* Изменено: убрано justify-content: center, чтобы баннер прилипал к низу */
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
+            padding-bottom: 20px; /* Отступ для баннера */
         }
 
         .game-wrapper {
@@ -92,7 +94,7 @@
             overflow: hidden;
         }
         
-        /* ... Стили .house, .house-inner, .house-number, .house-inner::before не изменились ... */
+        /* Стили домов, машинки и элементов управления остались прежними */
         .house {
             position: absolute;
             width: var(--cell-size);
@@ -139,7 +141,6 @@
         }
         .house.target .house-inner { background-color: var(--target-color); }
         .house.target .house-inner::before { border-bottom-color: #f39c12; }
-        /* ... Конец стилей .house ... */
 
 
         #car {
@@ -160,8 +161,6 @@
             50% { transform: translate(-50%, -50%) rotate(calc((var(--dir) - 1) * 90deg)) scale(1.1); }
             100% { transform: translate(-50%, -50%) rotate(calc((var(--dir) - 1) * 90deg)) scale(1); }
         }
-
-        /* --- НОВЫЕ СТИЛИ ДЛЯ УПРАВЛЕНИЯ --- */
 
         .controls-container {
             display: flex;
@@ -243,13 +242,6 @@
             background-color: #e8e8ed;
         }
 
-        /* Удаляем старые стили для кнопок (зеленый/оранжевый) */
-        .control-button[data-command="straight"] { /* ...пусто... */ }
-        .control-button[data-command="straight"]:hover { /* ...пусто... */ }
-        .control-button[data-command="u-turn"] { /* ...пусто... */ }
-        .control-button[data-command="u-turn"]:hover { /* ...пусто... */ }
-
-        /* ... Стили .message-box и @media не изменились ... */
         .message-box {
             position: fixed;
             top: -100px;
@@ -268,12 +260,43 @@
         .message-box.show { top: 0; }
         .message-box.success { background-color: #2ecc71; }
         .message-box.info { background-color: #3498db; }
+        
+        /* --- НОВЫЙ БАННЕР --- */
+        .promo-banner {
+            width: min(800px, 95vw);
+            margin-top: 30px;
+            padding: 15px 20px;
+            background-color: var(--ui-button-bg); /* Белый фон */
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ui-text-primary); /* Унаследованный цвет текста */
+        }
+
+        .promo-banner a {
+            color: var(--ui-link-color); /* Синий цвет ссылки */
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .promo-banner a:hover {
+            text-decoration: underline;
+        }
+        
+        /* --- КОНЕЦ НОВОГО БАННЕРА --- */
+        
         @media (max-width: 768px) {
             .game-wrapper { flex-direction: column; align-items: center; gap: 20px; }
             .controls-container { width: 90vw; }
             .controls { width: 100%; }
             :root { --cell-size: 15vmin; }
             h1 { font-size: 2rem; }
+            .promo-banner { font-size: 0.9rem; padding: 10px 15px; }
         }
 
     </style>
@@ -288,6 +311,7 @@
             </div>
             
             <div class="game-board" id="game-board">
+                <!-- SVG-машинка -->
                 <svg id="car" viewBox="0 0 100 100" style="--x: 0; --y: 0; --dir: 1;">
                     <path d="M 20 20 A 60 60 0 0 1 20 80" fill="none" stroke="#d2b48c" stroke-width="15"/>
                     <path d="M 20 20 L 80 50 L 20 80 z" fill="#f1c40f"/>
@@ -301,13 +325,13 @@
         <!-- Контейнер для всего управления -->
         <div class="controls-container">
             
-            <!-- НОВЫЙ Переключатель языка -->
+            <!-- Переключатель языка -->
             <div class="lang-switcher" id="lang-switcher">
                 <button class="lang-option active" data-lang="hanja">한자</button>
                 <button class="lang-option" data-lang="pure">순한국어</button>
             </div>
 
-            <!-- Сетка кнопок (HTML теперь пустой, JS заполнит текст) -->
+            <!-- Сетка кнопок -->
             <div class="controls">
                 <button class="control-button" data-command="straight"></button>
                 <button class="control-button" data-command="u-turn"></button>
@@ -318,6 +342,12 @@
     </div>
 
     <div id="message-box" class="message-box">Сообщение</div>
+    
+    <!-- НОВЫЙ БАННЕР -->
+    <div class="promo-banner">
+        Создано <a href="https://korean-dream.ru" target="_blank">korean-dream.ru</a>
+    </div>
+    <!-- КОНЕЦ НОВОГО БАННЕРА -->
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -366,12 +396,12 @@
                 
                 createHouses();
                 renderHouses();
+                // Позиция машинки (x=3, y=5, dir=0/вверх)
                 placeCar(3, 5, 0); 
                 updateStats();
-                updateButtonText(); // <--- НОВЫЙ ВЫЗОВ: Установить текст кнопок при запуске
+                updateButtonText(); // Установить текст кнопок при запуске
             }
 
-            // --- НОВАЯ ФУНКЦИЯ ---
             // Обновляет текст на кнопках в соответствии с currentLang
             function updateButtonText() {
                 controlButtons.forEach(button => {
@@ -382,7 +412,6 @@
                 });
             }
             
-            // --- НОВЫЙ ОБРАБОТЧИК ---
             // Слушатель для кнопок переключения языка
             langOptions.forEach(option => {
                 option.addEventListener('click', () => {
@@ -406,7 +435,9 @@
                     const row = Math.floor(Math.random() * GAME_SIZE);
                     const col = Math.floor(Math.random() * GAME_SIZE);
                     const posKey = `${row}-${col}`;
-                    if ((row === 4 && col === 2) || (row === 4 && col === 3)) continue;
+                    // Исключаем стартовую позицию (x=3, y=5 - это пересечение между строкой 4 и 5, столбцами 3 и 4)
+                    // Для домов (0-4), исключаем пересечения (5-5)
+                    if (row === 4 && col === 3) continue;
                     if (!positions.has(posKey)) {
                         positions.add(posKey);
                         houses.push({ row, col, num: houseNumber++ });
@@ -532,10 +563,14 @@
                 if (!targetHouse) return;
                 const { row, col } = targetHouse;
                 const { x, y } = car;
+                
+                // Проверяем, находится ли машинка на пересечении вокруг дома.
+                // Дом (row, col) занимает область от (col, row) до (col+1, row+1) на сетке пересечений.
                 const atTopLeft = (x === col && y === row);
                 const atTopRight = (x === col + 1 && y === row);
                 const atBottomLeft = (x === col && y === row + 1);
                 const atBottomRight = (x === col + 1 && y === row + 1);
+                
                 if (atTopLeft || atTopRight || atBottomLeft || atBottomRight) {
                     showMessage(`피자 배달 완료! 이동: ${moveCount}`, 'success');
                     targetHouse.element.classList.remove('target');
